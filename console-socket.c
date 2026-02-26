@@ -59,14 +59,20 @@ ssize_t console_socket_path_readable(const struct sockaddr_un *addr,
 {
 	const char *src = (const char *)addr;
 	size_t len;
-
+	ssize_t retval;
 	if (addrlen > SSIZE_MAX) {
 		return -EINVAL;
 	}
 
 	len = addrlen - sizeof(addr->sun_family) - 1;
-	memcpy(path, src + sizeof(addr->sun_family) + 1, len);
-	path[len] = '\0';
+       if(len >= sizeof(socket_path_t)){
+               return -EINVAL;
+       }
+       retval = snprintf(path,len,"%s",src + sizeof(addr->sun_family) + 1);
+       if(retval < 0 || (retval >= (signed)sizeof(socket_path_t)))
+       {
+               return -EINVAL;
 
+       }
 	return (ssize_t)len; /* strlen() style */
 }

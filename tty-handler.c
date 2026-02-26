@@ -113,6 +113,8 @@ static int tty_drain_queue(struct tty_handler *th, size_t force_len)
 			len = force_len - total_len;
 		}
 
+               /* Reason for False Positive - len is always greater than are equal to zero */
+               /* coverity[overflow_sink : FALSE] */
 		wlen = write(th->fd, buf, len);
 		if (wlen < 0) {
 			if (errno == EINTR) {
@@ -261,6 +263,7 @@ static struct handler *tty_init(const struct handler_type *type
 
 	th = malloc(sizeof(*th));
 	if (!th) {
+		free(tty_path);
 		return NULL;
 	}
 
