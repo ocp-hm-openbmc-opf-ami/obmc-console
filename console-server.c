@@ -65,7 +65,7 @@ static void usage(const char *progname)
 
 static bool console_server_pollfd_reclaimable(struct pollfd *p)
 {
-	return p->fd == -1 && p->events == 0 && p->revents == ~0;
+	return p->fd == -1 && p->events == 0 && p->revents == 0;
 }
 
 static ssize_t
@@ -128,7 +128,6 @@ int console_server_release_pollfd(struct console_server *server,
 	// https://www.man7.org/linux/man-pages/man2/poll.2.html
 	pfd->fd = -1;
 	pfd->events = 0;
-	pfd->revents = ~0;
 
 	return 0;
 }
