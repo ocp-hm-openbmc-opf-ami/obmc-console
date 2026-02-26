@@ -37,6 +37,7 @@
 #include "util.h"
 
 static const char *config_default_filename = SYSCONFDIR "/obmc-console.conf";
+char configFilePath[MAX_LINE_LEN] = "";
 
 const char *config_get_value(struct config *config, const char *name)
 {
@@ -72,6 +73,13 @@ struct config *config_init(const char *filename)
 	if (!filename) {
 		filename = config_default_filename;
 	}
+
+    int ret = snprintf(configFilePath, sizeof(configFilePath), "%s", filename);
+    if (ret < 0 || ((size_t)ret >= sizeof(configFilePath)))
+    {
+        warn("Buffer Overflow \n");
+        return NULL;
+    }
 
 	if (access(filename, R_OK) == 0) {
 		dict = iniparser_load(filename);

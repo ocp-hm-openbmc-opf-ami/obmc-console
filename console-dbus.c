@@ -33,6 +33,9 @@ const size_t dbus_obj_path_len = 1024;
 #define UART_INTF   "xyz.openbmc_project.Console.UART"
 #define ACCESS_INTF "xyz.openbmc_project.Console.Access"
 
+#define BAUD_PREFIX     "baud = "
+#define BAUD_PREFIX_LEN (sizeof(BAUD_PREFIX) - 1)
+
 static void tty_change_baudrate(struct console *console)
 {
 	int i;
@@ -56,6 +59,49 @@ static void tty_change_baudrate(struct console *console)
 			      type->name);
 		}
 	}
+}
+
+int update_baud_in_config(const char *filepath, uint64_t baud) {
+    char lines[MAX_LINES][MAX_LINE_LEN];
+    int ret, n = 0;
+    int baud_found = 0;
+    FILE *fp = fopen(filepath, "r");
+    if (fp) {
+        while (n < MAX_LINES && fgets(lines[n], sizeof(lines[n]), fp)) {
+            if (strncmp(lines[n], BAUD_PREFIX, BAUD_PREFIX_LEN) == 0) {
+                ret = snprintf(lines[n], sizeof(lines[n]), "baud = %" PRIu64 "\n", baud);
+                if(ret < 0 || ret >= (int)sizeof(lines[n]))
+                {
+                     warnx("Buffer Overflow");
+                     fclose(fp);
+                     return -1;
+                }
+                baud_found = 1;
+            }
+            n++;
+        }
+        fclose(fp);
+    }
+
+    if (!baud_found && n < MAX_LINES) {
+        ret = snprintf(lines[n], sizeof(lines[n]), "baud = %" PRIu64 "\n", baud);
+        if(ret < 0 || ret >= (int)sizeof(lines[n]))
+        {
+            warnx("Buffer Overflow");
+            return -1;
+        }
+        n++;
+    }
+
+    fp = fopen(filepath, "w");
+    if (!fp) {
+        return -1;
+    }
+    for (int i = 0; i < n; ++i) {
+        fputs(lines[i], fp);
+    }
+    fclose(fp);
+    return 0;
 }
 
 static int set_baud_handler(sd_bus *bus, const char *path,
@@ -86,6 +132,13 @@ static int set_baud_handler(sd_bus *bus, const char *path,
 	assert(console->server->tty.type == TTY_DEVICE_UART);
 	console->server->tty.uart.baud = speed;
 	tty_change_baudrate(console);
+
+    r = update_baud_in_config(configFilePath, baudrate);
+    if (r != 0)
+    {
+        warnx("Fail to write baud rate in config file");
+        return -EINVAL;
+    }
 
 	sd_bus_emit_properties_changed(bus, path, interface, property, NULL);
 

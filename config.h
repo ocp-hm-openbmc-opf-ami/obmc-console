@@ -21,6 +21,9 @@
 #include <stdint.h>
 #include <termios.h>
 
+#define MAX_LINES 64
+#define MAX_LINE_LEN 256
+
 struct config;
 
 const char *config_get_section_value(struct config *config, const char *secname,
@@ -38,3 +41,4 @@ int config_parse_bytesize(const char *size_str, size_t *size);
 
 int config_count_sections(struct config *config);
 const char *config_get_section_name(struct config *config, int i);
+extern char configFilePath[MAX_LINE_LEN];

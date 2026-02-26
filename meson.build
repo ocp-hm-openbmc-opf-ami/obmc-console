@@ -76,7 +76,7 @@ server = executable(
     'console-server.c',
     'console-socket.c',
     'console-mux.c',
-    log-handler,
+    log_handler,
     'ringbuffer.c',
     'socket-handler.c',
     'tty-handler.c',
