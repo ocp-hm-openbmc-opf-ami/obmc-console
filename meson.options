@@ -11,3 +11,4 @@ option(
     description: 'Support obmc-console-ssh and obmc-console-ssh-socket',
 )
 option('tests', type: 'boolean', description: 'Enable the test suite')
+option('obmc-console-log', type: 'boolean', description: 'Enable log support in obmc-console')

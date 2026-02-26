@@ -63,6 +63,12 @@ endif
 
 iniparser_dep = dependency('iniparser')
 
+log_handler = []
+
+if get_option('obmc-console-log')
+    log_handler += 'log-handler.c'
+endif
+
 server = executable(
     'obmc-console-server',
     'config.c',
@@ -70,7 +76,7 @@ server = executable(
     'console-server.c',
     'console-socket.c',
     'console-mux.c',
-    'log-handler.c',
+    log-handler,
     'ringbuffer.c',
     'socket-handler.c',
     'tty-handler.c',
