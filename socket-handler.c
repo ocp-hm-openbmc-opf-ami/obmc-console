@@ -306,16 +306,6 @@ err_close:
 	return POLLER_REMOVE;
 }
 
-static void init_routing()
-{
-       static bool init_done = false;
-       if (!init_done) {
-               if (system("/usr/bin/sol-configure.sh setup_routing") == 0) {
-                       init_done = true;
-               }
-       }
-}
-
 static enum poller_ret socket_poll(struct handler *handler, int events,
 				   void __attribute__((unused)) * data)
 {
@@ -334,8 +324,6 @@ static enum poller_ret socket_poll(struct handler *handler, int events,
 	}
 
 	console_mux_activate(sh->console);
-
-	init_routing();
 
 	client = malloc(sizeof(*client));
 	memset(client, 0, sizeof(*client));
@@ -415,8 +403,6 @@ int dbus_create_socket_consumer(struct console *console)
 	}
 
 	n = sh->n_clients++;
-
-	init_routing();
 
 	/*
 	 * We're managing an array of pointers to aggregates, so don't warn about
